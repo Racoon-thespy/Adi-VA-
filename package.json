@@ -8,6 +8,7 @@
 		"dev:real": "node scripts/dev-bridge.mjs",
 		"deploy": "wrangler deploy",
 		"test": "vitest run",
+		"eval:injection": "node evals/injection.mjs",
 		"build:widget": "node scripts/build-widget.mjs",
 		"typecheck": "tsc --noEmit && tsc --noEmit -p widget/tsconfig.json",
 		"lint": "eslint .",
