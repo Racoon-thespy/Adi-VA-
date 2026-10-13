@@ -1,0 +1,25 @@
+{
+	"name": "voice-agent",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "wrangler dev",
+		"deploy": "wrangler deploy",
+		"test": "vitest run",
+		"build:widget": "node scripts/build-widget.mjs",
+		"typecheck": "tsc --noEmit && tsc --noEmit -p widget/tsconfig.json",
+		"lint": "eslint .",
+		"format": "prettier --write ."
+	},
+	"devDependencies": {
+		"@cloudflare/workers-types": "5.20261011.1",
+		"esbuild": "0.28.2",
+		"eslint": "10.12.0",
+		"prettier": "3.9.10",
+		"typescript": "6.0.3",
+		"typescript-eslint": "8.71.1",
+		"vitest": "4.1.11",
+		"wrangler": "4.149.0"
+	}
+}
