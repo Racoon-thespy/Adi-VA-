@@ -1,5 +1,6 @@
 import { HttpChatClient } from './api';
-import { SynthesisSpeaker, WebSpeechTranscriber } from './speech';
+import { WorkersSpeaker } from './tts';
+import { WhisperTranscriber } from './whisper';
 import { mountWidget } from './widget';
 
 // Read synchronously: document.currentScript is only set while the script first runs.
@@ -12,8 +13,8 @@ function start(): void {
 	}
 	mountWidget({
 		api: new HttpChatClient(apiUrl),
-		transcriber: new WebSpeechTranscriber(),
-		speaker: new SynthesisSpeaker(),
+		transcriber: new WhisperTranscriber(apiUrl),
+		speaker: new WorkersSpeaker(apiUrl),
 	});
 }
 

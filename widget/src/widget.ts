@@ -3,7 +3,7 @@ import { buildRequest, type Turn } from './history';
 import type { Speaker, Transcriber } from './speech';
 import { CSS, MARKUP } from './styles';
 
-type State = 'idle' | 'listening' | 'thinking' | 'speaking';
+type State = 'idle' | 'listening' | 'transcribing' | 'thinking' | 'speaking';
 
 export interface WidgetDeps {
 	api: ChatClient;
@@ -16,6 +16,7 @@ const GREETING =
 const STATUS: Record<State, string> = {
 	idle: '',
 	listening: 'Listening',
+	transcribing: 'Transcribing',
 	thinking: 'Thinking',
 	speaking: 'Speaking',
 };
@@ -49,7 +50,7 @@ export function mountWidget({ api, transcriber, speaker }: WidgetDeps): void {
 		state = next;
 		root.dataset.state = next;
 		status.textContent = STATUS[next];
-		const busy = next === 'thinking';
+		const busy = next === 'thinking' || next === 'transcribing';
 		input.disabled = busy;
 		send.disabled = busy;
 		mic.setAttribute('aria-pressed', String(next === 'listening'));
@@ -66,7 +67,7 @@ export function mountWidget({ api, transcriber, speaker }: WidgetDeps): void {
 
 	function stopAudio(): void {
 		speaker.cancel();
-		transcriber.stop();
+		transcriber.cancel();
 	}
 
 	async function ask(question: string): Promise<void> {
@@ -113,9 +114,7 @@ export function mountWidget({ api, transcriber, speaker }: WidgetDeps): void {
 		setState('listening');
 		input.value = '';
 		transcriber.start({
-			onInterim: (text) => {
-				input.value = text;
-			},
+			onProcessing: () => setState('transcribing'),
 			onFinal: (text) => {
 				void ask(text);
 			},
@@ -123,12 +122,13 @@ export function mountWidget({ api, transcriber, speaker }: WidgetDeps): void {
 				addMessage('error', message);
 			},
 			onEnd: () => {
-				if (state === 'listening') setState('idle');
+				if (state === 'listening' || state === 'transcribing') setState('idle');
 			},
 		});
 	}
 
 	function open(): void {
+		speaker.prime();
 		root.dataset.open = 'true';
 		input.focus();
 	}
@@ -149,7 +149,7 @@ export function mountWidget({ api, transcriber, speaker }: WidgetDeps): void {
 	} else {
 		addMessage(
 			'pending',
-			"Voice uses your browser's speech recognition. In Chrome that audio goes to Google.",
+			'Tap the mic and speak. Your recording is sent to Cloudflare Workers AI to be transcribed.',
 		);
 	}
 	if (!speaker.supported) voiceToggle.hidden = true;
@@ -161,14 +161,19 @@ export function mountWidget({ api, transcriber, speaker }: WidgetDeps): void {
 	voiceToggle.addEventListener('click', () => {
 		spokenReplies = !spokenReplies;
 		voiceToggle.setAttribute('aria-pressed', String(spokenReplies));
-		if (!spokenReplies) speaker.cancel();
+		if (!spokenReplies) {
+			speaker.cancel();
+			if (state === 'speaking') setState('idle');
+		}
 	});
 	mic.addEventListener('click', () => {
+		speaker.prime();
 		if (state === 'listening') transcriber.stop();
-		else if (state !== 'thinking') startListening();
+		else if (state === 'idle' || state === 'speaking') startListening();
 	});
 	form.addEventListener('submit', (event) => {
 		event.preventDefault();
+		speaker.prime();
 		void ask(input.value);
 	});
 	shadow.addEventListener('keydown', (event) => {
