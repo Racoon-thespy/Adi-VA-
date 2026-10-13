@@ -6,6 +6,7 @@ import {
 	isWav,
 } from './audio';
 import { type Brain, WorkersAIBrain } from './brain';
+import { guardReply } from './guard';
 import { SYSTEM_PROMPT } from './prompt';
 import { MAX_AUDIO_BYTES, MAX_TRANSCRIPT_CHARS, parseMessages, parseSpeakBody } from './validate';
 
@@ -95,10 +96,8 @@ async function handleChat(request: Request, deps: Deps, origin: string): Promise
 	if (!parsed.ok) return json({ error: parsed.error }, 400, origin);
 
 	try {
-		const reply = (await deps.brain.reply(SYSTEM_PROMPT, parsed.messages)).slice(
-			0,
-			MAX_REPLY_CHARS,
-		);
+		const raw = await deps.brain.reply(SYSTEM_PROMPT, parsed.messages);
+		const reply = guardReply(raw).slice(0, MAX_REPLY_CHARS);
 		return json(
 			{ reply: reply || "Sorry, I didn't catch that. Could you ask again?" },
 			200,

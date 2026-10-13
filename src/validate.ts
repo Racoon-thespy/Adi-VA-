@@ -1,4 +1,5 @@
 import type { ChatMessage } from './brain';
+import { stripMarkup } from './guard';
 
 export const MAX_MESSAGES = 6;
 export const MAX_USER_CHARS = 300;
@@ -47,7 +48,7 @@ export function parseMessages(body: unknown): ParseResult {
 		if ((role !== 'user' && role !== 'assistant') || typeof content !== 'string') {
 			return { ok: false, error: 'Invalid message.' };
 		}
-		const text = content.trim();
+		const text = stripMarkup(content);
 		const limit = role === 'user' ? MAX_USER_CHARS : MAX_ASSISTANT_CHARS;
 		if (text.length === 0 || text.length > limit) {
 			return { ok: false, error: `Each ${role} message must be 1 to ${limit} characters.` };
