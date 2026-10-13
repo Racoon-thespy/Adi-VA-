@@ -5,6 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "wrangler dev",
+		"dev:real": "node scripts/dev-bridge.mjs",
 		"deploy": "wrangler deploy",
 		"test": "vitest run",
 		"build:widget": "node scripts/build-widget.mjs",
