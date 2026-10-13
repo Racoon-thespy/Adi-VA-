@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Brain, ChatMessage } from '../src/brain';
-import { type Env, handle } from '../src/index';
+import { type Env, handle as handleWithDeps } from '../src/index';
 import profile from '../src/profile.md';
 import { SYSTEM_PROMPT } from '../src/prompt';
 
@@ -10,10 +10,19 @@ function makeEnv(overrides: Partial<Env> = {}, allow = true): Env {
 	return {
 		AI: {} as Ai,
 		RATE_LIMITER: { limit: async () => ({ success: allow }) },
+		AUDIO_LIMITER: { limit: async () => ({ success: true }) },
 		ALLOWED_ORIGIN: ORIGIN,
 		...overrides,
 	};
 }
+
+// These tests cover /chat, so the speech stages are inert fakes.
+const handle = (request: Request, env: Env, brain: Brain) =>
+	handleWithDeps(request, env, {
+		brain,
+		stt: { transcribe: async () => '' },
+		tts: { synthesize: async () => ({ bytes: new Uint8Array(), contentType: 'audio/wav' }) },
+	});
 
 class FakeBrain implements Brain {
 	calls: { system: string; history: ChatMessage[] }[] = [];

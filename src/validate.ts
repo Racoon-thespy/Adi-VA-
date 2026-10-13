@@ -4,6 +4,24 @@ export const MAX_MESSAGES = 6;
 export const MAX_USER_CHARS = 300;
 export const MAX_ASSISTANT_CHARS = 600;
 
+// A 15 s recording at 16 kHz mono 16-bit is ~480 KB; the cap leaves headroom.
+export const MAX_AUDIO_BYTES = 600_000;
+export const MAX_SPEAK_CHARS = 600;
+export const MAX_TRANSCRIPT_CHARS = MAX_USER_CHARS;
+
+export type SpeakResult = { ok: true; text: string } | { ok: false; error: string };
+
+/** Validates a /speak request: one non-empty string, capped like the model's replies. */
+export function parseSpeakBody(body: unknown): SpeakResult {
+	const text = (body as { text?: unknown } | null)?.text;
+	if (typeof text !== 'string') return { ok: false, error: 'Expected { text: string }.' };
+	const trimmed = text.trim();
+	if (trimmed.length === 0 || trimmed.length > MAX_SPEAK_CHARS) {
+		return { ok: false, error: `text must be 1 to ${MAX_SPEAK_CHARS} characters.` };
+	}
+	return { ok: true, text: trimmed };
+}
+
 export type ParseResult = { ok: true; messages: ChatMessage[] } | { ok: false; error: string };
 
 /**
