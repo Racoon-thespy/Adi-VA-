@@ -110,6 +110,19 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 .msg.pending { color: var(--muted); }
 .hint { color: var(--muted); font-size: 12px; }
 
+.pills { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 14px 12px; }
+.pills[hidden] { display: none; }
+.pill {
+	padding: 6px 12px;
+	font-size: 12px;
+	color: var(--ink);
+	border: 1px solid var(--line-strong);
+	border-radius: 999px;
+	transition: border-color 0.2s, background 0.2s;
+}
+.pill:hover { border-color: var(--accent); background: rgba(229, 52, 43, 0.08); }
+.pill:disabled { opacity: 0.5; cursor: default; }
+
 .foot { border-top: 1px solid var(--line); padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
 .form { display: flex; gap: 8px; align-items: center; }
 .form input {
@@ -134,7 +147,13 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 	border-radius: 6px;
 }
 .mic:hover, .send:hover { border-color: var(--accent); }
-.mic[aria-pressed='true'] { background: var(--accent); border-color: var(--accent); }
+.mic[aria-pressed='true'] { background: var(--accent); border-color: var(--accent); animation: none; }
+/* Draws the eye to the mic until it is first used. */
+.mic[data-nudge='true'] {
+	color: var(--accent-2);
+	border-color: var(--accent);
+	animation: micPulse 1.8s ease-out infinite;
+}
 .send { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .send:disabled { opacity: 0.5; cursor: default; }
 .links { display: flex; justify-content: space-between; align-items: center; }
@@ -144,8 +163,14 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+@keyframes micPulse {
+	0% { box-shadow: 0 0 0 0 rgba(229, 52, 43, 0.55); }
+	70% { box-shadow: 0 0 0 12px rgba(229, 52, 43, 0); }
+	100% { box-shadow: 0 0 0 0 rgba(229, 52, 43, 0); }
+}
 @media (prefers-reduced-motion: reduce) {
 	.root[data-state='listening'] .rec .dot { animation: none; }
+	.mic[data-nudge='true'] { animation: none; } /* keeps the accent colour, drops the motion */
 }
 @media (max-width: 480px) {
 	.root { right: 16px; left: 16px; }
@@ -173,9 +198,10 @@ export const MARKUP = `
 			<button class="icon-btn close" type="button" aria-label="Close the assistant">${CLOSE}</button>
 		</div>
 		<div class="log" role="log" aria-live="polite"></div>
+		<div class="pills" role="group" aria-label="Suggested questions"></div>
 		<div class="foot">
 			<form class="form">
-				<input type="text" maxlength="300" placeholder="Ask a question" aria-label="Your question" autocomplete="off" />
+				<input type="text" maxlength="300" placeholder="Type, or tap the mic to talk" aria-label="Your question" autocomplete="off" />
 				<button class="mic" type="button" aria-pressed="false" aria-label="Speak your question">${MIC}</button>
 				<button class="send" type="submit" aria-label="Send">${SEND}</button>
 			</form>

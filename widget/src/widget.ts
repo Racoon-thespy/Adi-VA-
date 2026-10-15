@@ -2,6 +2,7 @@ import { ApiError, type ChatClient } from './api';
 import { buildRequest, type Turn } from './history';
 import type { Speaker, Transcriber } from './speech';
 import { CSS, MARKUP } from './styles';
+import { SUGGESTIONS, type Suggestion, matchSuggestion } from './suggestions';
 
 type State = 'idle' | 'listening' | 'transcribing' | 'thinking' | 'speaking';
 
@@ -41,7 +42,9 @@ export function mountWidget({ api, transcriber, speaker }: WidgetDeps): void {
 	const send = find<HTMLButtonElement>('.send');
 	const status = find<HTMLElement>('.status');
 	const voiceToggle = find<HTMLButtonElement>('.voice-toggle');
+	const pills = find<HTMLElement>('.pills');
 
+	const pillButtons = new Map<Suggestion, HTMLButtonElement>();
 	const history: Turn[] = [];
 	let state: State = 'idle';
 	let spokenReplies = speaker.supported;
@@ -65,6 +68,15 @@ export function mountWidget({ api, transcriber, speaker }: WidgetDeps): void {
 		return el;
 	}
 
+	/** Removes the pill whose question was just asked, however it was asked (tap, type or voice). */
+	function retirePill(text: string): void {
+		const suggestion = matchSuggestion(text);
+		if (!suggestion) return;
+		pillButtons.get(suggestion)?.remove();
+		pillButtons.delete(suggestion);
+		if (pillButtons.size === 0) pills.hidden = true;
+	}
+
 	function stopAudio(): void {
 		speaker.cancel();
 		transcriber.cancel();
@@ -76,6 +88,7 @@ export function mountWidget({ api, transcriber, speaker }: WidgetDeps): void {
 
 		stopAudio();
 		input.value = '';
+		retirePill(text); // a suggestion disappears once its question has been asked
 		addMessage('user', text);
 		const pending = addMessage('pending', '...');
 		setState('thinking');
@@ -155,6 +168,22 @@ export function mountWidget({ api, transcriber, speaker }: WidgetDeps): void {
 	if (!speaker.supported) voiceToggle.hidden = true;
 	voiceToggle.setAttribute('aria-pressed', String(spokenReplies));
 
+	for (const suggestion of SUGGESTIONS) {
+		const pill = document.createElement('button');
+		pill.type = 'button';
+		pill.className = 'pill';
+		pill.textContent = suggestion.label;
+		pill.addEventListener('click', () => {
+			speaker.prime(); // a tap is a user gesture, which lets audio play later
+			void ask(suggestion.question);
+		});
+		pillButtons.set(suggestion, pill);
+		pills.append(pill);
+	}
+
+	// Pulse the mic until the visitor first uses it, to show that they can simply talk.
+	if (transcriber.supported) mic.dataset.nudge = 'true';
+
 	find<HTMLButtonElement>('.launcher').addEventListener('click', open);
 	find<HTMLButtonElement>('.close').addEventListener('click', close);
 	find<HTMLAnchorElement>('.contact').addEventListener('click', close);
@@ -167,6 +196,7 @@ export function mountWidget({ api, transcriber, speaker }: WidgetDeps): void {
 		}
 	});
 	mic.addEventListener('click', () => {
+		delete mic.dataset.nudge; // they found it; stop pulsing for the rest of the session
 		speaker.prime();
 		if (state === 'listening') transcriber.stop();
 		else if (state === 'idle' || state === 'speaking') startListening();
