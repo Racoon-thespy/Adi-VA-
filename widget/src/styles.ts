@@ -8,6 +8,8 @@ export const CSS = `
 	--panel: #0c0c0f;
 	--ink: #f4f4f1;
 	--muted: #8b8b93;
+	--muted-2: #5c5c63;
+	--radius: 6px;
 	--line: rgba(255, 255, 255, 0.1);
 	--line-strong: rgba(255, 255, 255, 0.2);
 	--accent: #e5342b;
@@ -38,22 +40,21 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 .launcher {
 	display: flex;
 	align-items: center;
-	gap: 10px;
+	gap: 8px;
 	margin-left: auto;
-	padding: 10px 16px 10px 12px;
-	background: var(--panel);
+	padding: 9px 16px 9px 12px;
+	background: var(--bg);
 	border: 1px solid var(--line-strong);
 	border-radius: 999px;
-	box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
-	transition: border-color 0.2s;
+	transition: border-color 0.2s ease, color 0.2s ease;
 }
-.launcher:hover { border-color: var(--accent); }
+.launcher:hover { border-color: var(--accent); color: var(--accent); }
 .dot {
-	width: 8px;
-	height: 8px;
+	width: 6px;
+	height: 6px;
 	border-radius: 50%;
 	background: var(--accent);
-	box-shadow: 0 0 8px var(--accent);
+	animation: pulse 2.4s ease-in-out infinite;
 }
 .root[data-open='true'] .launcher { display: none; }
 
@@ -63,26 +64,49 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 	flex-direction: column;
 	width: min(380px, calc(100vw - 32px));
 	height: min(520px, calc(100vh - 150px));
+	position: relative;
+	--vf-color: var(--line-strong);
 	background: var(--panel);
-	border: 1px solid var(--line-strong);
-	border-radius: 8px;
-	box-shadow: 0 16px 50px rgba(0, 0, 0, 0.6);
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
 	overflow: hidden;
+	transition: border-color 0.2s ease;
 }
 .root[data-open='true'] .panel { display: flex; }
+
+/* Viewfinder corners + edge ticks, same recipe as the site's .viewfinder. */
+.panel::before, .panel::after { content: ''; position: absolute; inset: 12px; pointer-events: none; z-index: 1; }
+.panel::before {
+	background:
+		linear-gradient(var(--vf-color), var(--vf-color)) top left / 18px 1px no-repeat,
+		linear-gradient(var(--vf-color), var(--vf-color)) top left / 1px 18px no-repeat,
+		linear-gradient(var(--vf-color), var(--vf-color)) top right / 18px 1px no-repeat,
+		linear-gradient(var(--vf-color), var(--vf-color)) top right / 1px 18px no-repeat,
+		linear-gradient(var(--vf-color), var(--vf-color)) bottom left / 18px 1px no-repeat,
+		linear-gradient(var(--vf-color), var(--vf-color)) bottom left / 1px 18px no-repeat,
+		linear-gradient(var(--vf-color), var(--vf-color)) bottom right / 18px 1px no-repeat,
+		linear-gradient(var(--vf-color), var(--vf-color)) bottom right / 1px 18px no-repeat;
+}
+.panel::after {
+	background:
+		radial-gradient(circle, rgba(255, 255, 255, 0.22) 2.5px, transparent 2.5px) top center / 5px 5px no-repeat,
+		radial-gradient(circle, rgba(255, 255, 255, 0.22) 2.5px, transparent 2.5px) bottom center / 5px 5px no-repeat,
+		radial-gradient(circle, rgba(255, 255, 255, 0.22) 2.5px, transparent 2.5px) center left / 5px 5px no-repeat,
+		radial-gradient(circle, rgba(255, 255, 255, 0.22) 2.5px, transparent 2.5px) center right / 5px 5px no-repeat;
+}
 
 .head {
 	display: flex;
 	align-items: center;
 	gap: 8px;
-	padding: 12px 14px;
+	padding: 14px 18px 12px;
 	border-bottom: 1px solid var(--line);
 }
-.head .title { flex: 1; }
+.head .title { flex: 1; color: var(--accent); }
 .rec { display: none; align-items: center; gap: 6px; color: var(--accent-2); }
 .root[data-state='listening'] .rec { display: inline-flex; }
 .root[data-state='listening'] .rec .dot { animation: pulse 1s ease-in-out infinite; }
-.status { color: var(--muted); }
+.status { color: var(--muted-2); }
 .icon-btn { padding: 6px; border-radius: 4px; color: var(--muted); }
 .icon-btn:hover { color: var(--ink); }
 .icon-btn[aria-pressed='true'] { color: var(--accent-2); }
@@ -90,40 +114,57 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 .log {
 	flex: 1;
 	overflow-y: auto;
-	padding: 14px;
+	padding: 18px;
 	display: flex;
 	flex-direction: column;
-	gap: 10px;
+	gap: 14px;
 	overscroll-behavior: contain;
 }
+/* Flat, left-ruled transcript lines with a mono speaker label, like the
+   site's reel cards, instead of generic chat bubbles. */
 .msg {
-	max-width: 88%;
-	padding: 8px 12px;
-	border-radius: 6px;
-	border: 1px solid var(--line);
+	max-width: 92%;
+	padding: 0 0 0 12px;
+	border-left: 1px solid var(--line-strong);
+	color: var(--muted);
 	white-space: pre-wrap;
 	overflow-wrap: anywhere;
 }
-.msg.user { align-self: flex-end; background: rgba(229, 52, 43, 0.12); border-color: rgba(229, 52, 43, 0.35); }
-.msg.bot { align-self: flex-start; background: rgba(255, 255, 255, 0.04); }
-.msg.error { align-self: flex-start; color: var(--accent-2); border-color: rgba(229, 52, 43, 0.35); }
-.msg.pending { color: var(--muted); }
-.hint { color: var(--muted); font-size: 12px; }
+.msg::before {
+	display: block;
+	margin-bottom: 2px;
+	font-family: 'Space Mono', ui-monospace, monospace;
+	font-size: 11px;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--muted-2);
+}
+.msg.user { align-self: flex-end; color: var(--ink); }
+.msg.user::before { content: 'You'; color: var(--accent); }
+.msg.bot { align-self: flex-start; }
+.msg.bot::before { content: 'A.P.S.'; }
+.msg.error { align-self: flex-start; color: var(--accent-2); }
+.msg.error::before { content: 'Error'; color: var(--accent); }
+.msg.pending { color: var(--muted-2); }
+.msg.pending::before { content: none; }
+.hint { color: var(--muted-2); font-size: 11px; }
 
-.pills { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 14px 12px; }
+.pills { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 18px 14px; }
 .pills[hidden] { display: none; }
 .pill {
-	padding: 6px 12px;
-	font-size: 12px;
-	color: var(--ink);
-	border: 1px solid var(--line-strong);
-	border-radius: 999px;
-	transition: border-color 0.2s, background 0.2s;
+	padding: 3px 8px;
+	font-family: 'Space Mono', ui-monospace, monospace;
+	font-size: 11px;
+	letter-spacing: 0.06em;
+	color: var(--muted);
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	transition: border-color 0.2s ease, color 0.2s ease;
 }
-.pill:hover { border-color: var(--accent); background: rgba(229, 52, 43, 0.08); }
+.pill:hover { border-color: var(--accent); color: var(--ink); }
 .pill:disabled { opacity: 0.5; cursor: default; }
 
-.foot { border-top: 1px solid var(--line); padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+.foot { border-top: 1px solid var(--line); padding: 14px 18px; display: flex; flex-direction: column; gap: 8px; }
 .form { display: flex; gap: 8px; align-items: center; }
 .form input {
 	flex: 1;
@@ -132,9 +173,11 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 	font: inherit;
 	color: var(--ink);
 	background: var(--bg);
-	border: 1px solid var(--line-strong);
-	border-radius: 6px;
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	transition: border-color 0.2s ease;
 }
+.form input:focus { border-color: var(--line-strong); }
 .form input::placeholder { color: var(--muted); }
 .form input:disabled { opacity: 0.6; }
 .mic, .send {
@@ -143,8 +186,9 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 	height: 38px;
 	display: grid;
 	place-items: center;
-	border: 1px solid var(--line-strong);
-	border-radius: 6px;
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	transition: border-color 0.2s ease, color 0.2s ease;
 }
 .mic:hover, .send:hover { border-color: var(--accent); }
 .mic[aria-pressed='true'] { background: var(--accent); border-color: var(--accent); animation: none; }
@@ -154,11 +198,9 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 	border-color: var(--accent);
 	animation: micPulse 1.8s ease-out infinite;
 }
-.send { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.send { background: rgba(229, 52, 43, 0.18); color: var(--ink); border-color: rgba(229, 52, 43, 0.4); }
+.send:hover { background: rgba(229, 52, 43, 0.3); border-color: rgba(229, 52, 43, 0.6); }
 .send:disabled { opacity: 0.5; cursor: default; }
-.links { display: flex; justify-content: space-between; align-items: center; }
-.links a { color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
-.links a:hover { color: var(--ink); }
 
 svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
@@ -169,7 +211,7 @@ svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width:
 	100% { box-shadow: 0 0 0 0 rgba(229, 52, 43, 0); }
 }
 @media (prefers-reduced-motion: reduce) {
-	.root[data-state='listening'] .rec .dot { animation: none; }
+	.dot, .root[data-state='listening'] .rec .dot { animation: none; }
 	.mic[data-nudge='true'] { animation: none; } /* keeps the accent colour, drops the motion */
 }
 @media (max-width: 480px) {
@@ -205,10 +247,7 @@ export const MARKUP = `
 				<button class="mic" type="button" aria-pressed="false" aria-label="Speak your question">${MIC}</button>
 				<button class="send" type="submit" aria-label="Send">${SEND}</button>
 			</form>
-			<div class="links">
-				<span class="hint">AI-generated. May make mistakes.</span>
-				<a class="contact" href="#contact">Contact Aditya</a>
-			</div>
+			<span class="hint">AI-generated. May make mistakes.</span>
 		</div>
 	</section>
 </div>

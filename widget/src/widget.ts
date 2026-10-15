@@ -186,16 +186,6 @@ export function mountWidget({ api, transcriber, speaker }: WidgetDeps): void {
 
 	find<HTMLButtonElement>('.launcher').addEventListener('click', open);
 	find<HTMLButtonElement>('.close').addEventListener('click', close);
-	find<HTMLAnchorElement>('.contact').addEventListener('click', (event) => {
-		// A portfolio that scrolls sideways intercepts its own #contact links, but cannot see
-		// inside this widget's Shadow DOM. Clicking the page's own link runs its scroll logic.
-		const pageLink = document.querySelector<HTMLAnchorElement>('a[href="#contact"]');
-		if (pageLink) {
-			event.preventDefault();
-			pageLink.click();
-		}
-		close();
-	});
 	voiceToggle.addEventListener('click', () => {
 		spokenReplies = !spokenReplies;
 		voiceToggle.setAttribute('aria-pressed', String(spokenReplies));
