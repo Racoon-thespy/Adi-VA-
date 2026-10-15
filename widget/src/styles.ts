@@ -1,30 +1,38 @@
 // Tokens mirror the portfolio's style.css (near-black stage, one red tally-light accent).
+//
+// The host page can restyle the widget without a rebuild: CSS custom properties pass through the
+// Shadow DOM, so in the portfolio's own stylesheet it can set, for example,
+//   #aditya-voice-agent { --va-accent: #ff4d3d; --va-bottom: 96px; }
+// Every --va-* name below is optional and falls back to the default shown. Keep the list in
+// README.md ("Styling from the portfolio") in step; a test checks that they match.
 export const CSS = `
 :host { all: initial; }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 .root {
-	--bg: #050506;
-	--panel: #0c0c0f;
-	--ink: #f4f4f1;
-	--muted: #8b8b93;
-	--muted-2: #5c5c63;
-	--radius: 6px;
-	--line: rgba(255, 255, 255, 0.1);
-	--line-strong: rgba(255, 255, 255, 0.2);
-	--accent: #e5342b;
-	--accent-2: #f5473a;
+	--bg: var(--va-bg, #050506);
+	--panel: var(--va-panel, #0c0c0f);
+	--ink: var(--va-ink, #f4f4f1);
+	--muted: var(--va-muted, #8b8b93);
+	--muted-2: var(--va-muted-2, #5c5c63);
+	--radius: var(--va-radius, 6px);
+	--line: var(--va-line, rgba(255, 255, 255, 0.1));
+	--line-strong: var(--va-line-strong, rgba(255, 255, 255, 0.2));
+	--accent: var(--va-accent, #e5342b);
+	--accent-2: var(--va-accent-2, #f5473a);
+	--font-mono: var(--va-font-mono, 'Space Mono', ui-monospace, monospace);
+	--bottom: var(--va-bottom, 92px); /* the default clears the portfolio's 72px fixed scrubber */
 	position: fixed;
-	right: 20px;
-	bottom: 92px; /* clears the portfolio's 72px fixed scrubber */
-	z-index: 45;
-	font-family: 'Inter', system-ui, sans-serif;
-	font-size: 14px;
+	right: var(--va-right, 20px);
+	bottom: var(--bottom);
+	z-index: var(--va-z-index, 45);
+	font-family: var(--va-font, 'Inter', system-ui, sans-serif);
+	font-size: var(--va-font-size, 14px);
 	line-height: 1.5;
 	color: var(--ink);
 }
 .mono {
-	font-family: 'Space Mono', ui-monospace, monospace;
+	font-family: var(--font-mono);
 	letter-spacing: 0.12em;
 	text-transform: uppercase;
 	font-size: 11px;
@@ -62,8 +70,8 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 .panel {
 	display: none;
 	flex-direction: column;
-	width: min(380px, calc(100vw - 32px));
-	height: min(520px, calc(100vh - 150px));
+	width: min(var(--va-width, 380px), calc(100vw - 32px));
+	height: min(var(--va-height, 520px), calc(100vh - var(--bottom) - 58px));
 	position: relative;
 	--vf-color: var(--line-strong);
 	background: var(--panel);
@@ -133,7 +141,7 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 .msg::before {
 	display: block;
 	margin-bottom: 2px;
-	font-family: 'Space Mono', ui-monospace, monospace;
+	font-family: var(--font-mono);
 	font-size: 11px;
 	letter-spacing: 0.12em;
 	text-transform: uppercase;
@@ -153,7 +161,7 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 .pills[hidden] { display: none; }
 .pill {
 	padding: 3px 8px;
-	font-family: 'Space Mono', ui-monospace, monospace;
+	font-family: var(--font-mono);
 	font-size: 11px;
 	letter-spacing: 0.06em;
 	color: var(--muted);
@@ -198,24 +206,31 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 	border-color: var(--accent);
 	animation: micPulse 1.8s ease-out infinite;
 }
-.send { background: rgba(229, 52, 43, 0.18); color: var(--ink); border-color: rgba(229, 52, 43, 0.4); }
-.send:hover { background: rgba(229, 52, 43, 0.3); border-color: rgba(229, 52, 43, 0.6); }
+.send {
+	background: color-mix(in srgb, var(--accent) 18%, transparent);
+	color: var(--ink);
+	border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.send:hover {
+	background: color-mix(in srgb, var(--accent) 30%, transparent);
+	border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+}
 .send:disabled { opacity: 0.5; cursor: default; }
 
 svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 @keyframes micPulse {
-	0% { box-shadow: 0 0 0 0 rgba(229, 52, 43, 0.55); }
-	70% { box-shadow: 0 0 0 12px rgba(229, 52, 43, 0); }
-	100% { box-shadow: 0 0 0 0 rgba(229, 52, 43, 0); }
+	0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent); }
+	70% { box-shadow: 0 0 0 12px transparent; }
+	100% { box-shadow: 0 0 0 0 transparent; }
 }
 @media (prefers-reduced-motion: reduce) {
 	.dot, .root[data-state='listening'] .rec .dot { animation: none; }
 	.mic[data-nudge='true'] { animation: none; } /* keeps the accent colour, drops the motion */
 }
 @media (max-width: 480px) {
-	.root { right: 16px; left: 16px; }
+	.root { right: var(--va-inset-mobile, 16px); left: var(--va-inset-mobile, 16px); }
 	.panel { width: 100%; }
 }
 `;
