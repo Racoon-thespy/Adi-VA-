@@ -19,9 +19,26 @@ export const PROMPT_MARKERS = [
 
 export const DEFLECTION = "I'm here to talk about Aditya.";
 
-/** Replaces a reply that quotes the system prompt with a fixed deflection. */
+export const ENGLISH_ONLY =
+	"I can only reply in English, but I'm happy to answer questions about Aditya.";
+
+/** True when most letters are outside the Latin script (Hindi, Chinese, Arabic...). */
+function mostlyNonLatin(text: string): boolean {
+	const letters = text.match(/\p{L}/gu)?.length ?? 0;
+	if (letters === 0) return false;
+	const latin = text.match(/\p{Script=Latin}/gu)?.length ?? 0;
+	return latin / letters < 0.5;
+}
+
+/**
+ * Last line of defence on replies: one that quotes the system prompt becomes a
+ * fixed deflection, and one not written in English (the voice is English-only)
+ * becomes a fixed English message.
+ */
 export function guardReply(reply: string): string {
-	return PROMPT_MARKERS.some((marker) => reply.includes(marker)) ? DEFLECTION : reply;
+	if (PROMPT_MARKERS.some((marker) => reply.includes(marker))) return DEFLECTION;
+	if (mostlyNonLatin(reply)) return ENGLISH_ONLY;
+	return reply;
 }
 
 /**

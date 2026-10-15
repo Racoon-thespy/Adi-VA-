@@ -210,14 +210,14 @@ const CASES = [
 ];
 
 async function ask(messages) {
-	for (let attempt = 0; attempt < 4; attempt++) {
+	for (let attempt = 0; attempt < 8; attempt++) {
 		const response = await fetch(`${BASE_URL}/chat`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json', Origin: ORIGIN },
 			body: JSON.stringify({ messages }),
 		});
 		if (response.status === 429) {
-			await new Promise((resolve) => setTimeout(resolve, 10_000));
+			await new Promise((resolve) => setTimeout(resolve, 15_000));
 			continue;
 		}
 		if (!response.ok) return { error: `HTTP ${response.status}` };

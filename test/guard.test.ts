@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Brain, ChatMessage } from '../src/brain';
-import { DEFLECTION, PROMPT_MARKERS, guardReply, stripMarkup } from '../src/guard';
+import { DEFLECTION, ENGLISH_ONLY, PROMPT_MARKERS, guardReply, stripMarkup } from '../src/guard';
 import { type Env, handle } from '../src/index';
 import { SYSTEM_PROMPT } from '../src/prompt';
 import { parseMessages } from '../src/validate';
@@ -25,6 +25,19 @@ describe('guardReply', () => {
 	it('leaves ordinary answers untouched', () => {
 		const answer = 'Aditya worked at Dialflo and built a prompt-evaluation framework.';
 		expect(guardReply(answer)).toBe(answer);
+	});
+
+	it('replaces replies written in another script, since the voice is English-only', () => {
+		expect(guardReply('मैं केवल अंग्रेजी में उत्तर दे सकता हूँ।')).toBe(ENGLISH_ONLY);
+		expect(guardReply('阿迪蒂亚是一名工程师')).toBe(ENGLISH_ONLY);
+	});
+
+	it('keeps English that merely contains a few non-Latin characters or accents', () => {
+		const withAccent = 'Aditya studied at IIIT Guwahati, a café-style campus in Assam.';
+		expect(guardReply(withAccent)).toBe(withAccent);
+		const withSymbol = 'He earned ₹ in stipends and built agents.';
+		expect(guardReply(withSymbol)).toBe(withSymbol);
+		expect(guardReply('12345 !!!')).toBe('12345 !!!'); // no letters at all
 	});
 });
 
