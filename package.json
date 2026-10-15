@@ -11,6 +11,7 @@
 		"eval:injection": "node evals/injection.mjs",
 		"say": "node scripts/say.mjs",
 		"build:widget": "node scripts/build-widget.mjs",
+		"publish:widget": "node scripts/publish-widget.mjs",
 		"typecheck": "tsc --noEmit && tsc --noEmit -p widget/tsconfig.json",
 		"lint": "eslint .",
 		"format": "prettier --write ."

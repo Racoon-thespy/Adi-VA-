@@ -247,7 +247,6 @@ export const MARKUP = `
 				<button class="mic" type="button" aria-pressed="false" aria-label="Speak your question">${MIC}</button>
 				<button class="send" type="submit" aria-label="Send">${SEND}</button>
 			</form>
-			<span class="hint">AI-generated. May make mistakes.</span>
 		</div>
 	</section>
 </div>
