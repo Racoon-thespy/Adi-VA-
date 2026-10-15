@@ -7,6 +7,7 @@ import {
 } from './audio';
 import { type Brain, WorkersAIBrain } from './brain';
 import { guardReply } from './guard';
+import { forSpeech } from './pronounce';
 import { SYSTEM_PROMPT } from './prompt';
 import { MAX_AUDIO_BYTES, MAX_TRANSCRIPT_CHARS, parseMessages, parseSpeakBody } from './validate';
 
@@ -131,7 +132,7 @@ async function handleSpeak(request: Request, deps: Deps, origin: string): Promis
 	if (!parsed.ok) return json({ error: parsed.error }, 400, origin);
 
 	try {
-		const { bytes, contentType } = await deps.tts.synthesize(parsed.text);
+		const { bytes, contentType } = await deps.tts.synthesize(forSpeech(parsed.text));
 		return new Response(bytes.slice(), {
 			headers: { 'Content-Type': contentType, 'Cache-Control': 'no-store', ...corsHeaders(origin) },
 		});

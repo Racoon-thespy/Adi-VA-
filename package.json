@@ -9,6 +9,7 @@
 		"deploy": "wrangler deploy",
 		"test": "vitest run",
 		"eval:injection": "node evals/injection.mjs",
+		"say": "node scripts/say.mjs",
 		"build:widget": "node scripts/build-widget.mjs",
 		"typecheck": "tsc --noEmit && tsc --noEmit -p widget/tsconfig.json",
 		"lint": "eslint .",
