@@ -79,7 +79,7 @@ recolours the send button and the mic pulse.
 | `--va-radius`       | corner radius of panel, input, pills        | `6px`                        |
 | `--va-font`         | body font                                   | `'Inter', system-ui`         |
 | `--va-font-mono`    | labels and pills                            | `'Space Mono', ui-monospace` |
-| `--va-font-size`    | base text size                              | `14px`                       |
+| `--va-font-size`    | base text size                              | `15px`                       |
 | `--va-right`        | distance from the right edge                | `20px`                       |
 | `--va-bottom`       | distance from the bottom edge               | `92px` (clears the scrubber) |
 | `--va-z-index`      | stacking order                              | `45`                         |

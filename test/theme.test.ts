@@ -54,7 +54,7 @@ describe('theme variables', () => {
 			'--bottom: 92px;',
 			'right: 20px;',
 			'z-index: 45;',
-			'font-size: 14px;',
+			'font-size: 15px;',
 			'width: min(380px, calc(100vw - 32px));',
 			'height: min(520px, calc(100vh - var(--bottom) - 58px));',
 		]) {

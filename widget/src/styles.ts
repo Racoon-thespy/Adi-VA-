@@ -21,13 +21,18 @@ export const CSS = `
 	--accent: var(--va-accent, #e5342b);
 	--accent-2: var(--va-accent-2, #f5473a);
 	--font-mono: var(--va-font-mono, 'Space Mono', ui-monospace, monospace);
+	/* The send button's soft red: every control's hover, pressed and attention state uses these. */
+	--tint: color-mix(in srgb, var(--accent) 18%, transparent);
+	--tint-line: color-mix(in srgb, var(--accent) 40%, transparent);
+	--tint-hover: color-mix(in srgb, var(--accent) 30%, transparent);
+	--tint-line-hover: color-mix(in srgb, var(--accent) 60%, transparent);
 	--bottom: var(--va-bottom, 92px); /* the default clears the portfolio's 72px fixed scrubber */
 	position: fixed;
 	right: var(--va-right, 20px);
 	bottom: var(--bottom);
 	z-index: var(--va-z-index, 45);
 	font-family: var(--va-font, 'Inter', system-ui, sans-serif);
-	font-size: var(--va-font-size, 14px);
+	font-size: var(--va-font-size, 15px);
 	line-height: 1.5;
 	color: var(--ink);
 }
@@ -35,7 +40,7 @@ export const CSS = `
 	font-family: var(--font-mono);
 	letter-spacing: 0.12em;
 	text-transform: uppercase;
-	font-size: 11px;
+	font-size: 12px;
 }
 
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
@@ -56,7 +61,11 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 	border-radius: 999px;
 	transition: border-color 0.2s ease, color 0.2s ease;
 }
-.launcher:hover { border-color: var(--accent); color: var(--accent); }
+.launcher:hover {
+	border-color: var(--tint-line);
+	color: var(--ink);
+	background: linear-gradient(var(--tint), var(--tint)), var(--bg);
+}
 .dot {
 	width: 6px;
 	height: 6px;
@@ -72,43 +81,18 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 	flex-direction: column;
 	width: min(var(--va-width, 380px), calc(100vw - 32px));
 	height: min(var(--va-height, 520px), calc(100vh - var(--bottom) - 58px));
-	position: relative;
-	--vf-color: var(--line-strong);
 	background: var(--panel);
-	border: 1px solid var(--line);
 	border-radius: var(--radius);
 	overflow: hidden;
-	transition: border-color 0.2s ease;
 }
 .root[data-open='true'] .panel { display: flex; }
 
-/* Viewfinder corners + edge ticks, same recipe as the site's .viewfinder. */
-.panel::before, .panel::after { content: ''; position: absolute; inset: 12px; pointer-events: none; z-index: 1; }
-.panel::before {
-	background:
-		linear-gradient(var(--vf-color), var(--vf-color)) top left / 18px 1px no-repeat,
-		linear-gradient(var(--vf-color), var(--vf-color)) top left / 1px 18px no-repeat,
-		linear-gradient(var(--vf-color), var(--vf-color)) top right / 18px 1px no-repeat,
-		linear-gradient(var(--vf-color), var(--vf-color)) top right / 1px 18px no-repeat,
-		linear-gradient(var(--vf-color), var(--vf-color)) bottom left / 18px 1px no-repeat,
-		linear-gradient(var(--vf-color), var(--vf-color)) bottom left / 1px 18px no-repeat,
-		linear-gradient(var(--vf-color), var(--vf-color)) bottom right / 18px 1px no-repeat,
-		linear-gradient(var(--vf-color), var(--vf-color)) bottom right / 1px 18px no-repeat;
-}
-.panel::after {
-	background:
-		radial-gradient(circle, rgba(255, 255, 255, 0.22) 2.5px, transparent 2.5px) top center / 5px 5px no-repeat,
-		radial-gradient(circle, rgba(255, 255, 255, 0.22) 2.5px, transparent 2.5px) bottom center / 5px 5px no-repeat,
-		radial-gradient(circle, rgba(255, 255, 255, 0.22) 2.5px, transparent 2.5px) center left / 5px 5px no-repeat,
-		radial-gradient(circle, rgba(255, 255, 255, 0.22) 2.5px, transparent 2.5px) center right / 5px 5px no-repeat;
-}
 
 .head {
 	display: flex;
 	align-items: center;
 	gap: 8px;
 	padding: 14px 18px 12px;
-	border-bottom: 1px solid var(--line);
 }
 .head .title { flex: 1; color: var(--accent); }
 .rec { display: none; align-items: center; gap: 6px; color: var(--accent-2); }
@@ -117,7 +101,18 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 .status { color: var(--muted-2); }
 .icon-btn { padding: 6px; border-radius: 4px; color: var(--muted); }
 .icon-btn:hover { color: var(--ink); }
-.icon-btn[aria-pressed='true'] { color: var(--accent-2); }
+.voice-toggle {
+	width: 30px;
+	height: 30px;
+	padding: 0;
+	display: grid;
+	place-items: center;
+	border: 1px solid var(--line);
+	border-radius: 50%;
+	transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+.voice-toggle:hover { border-color: var(--line-strong); }
+.voice-toggle[aria-pressed='true'] { color: var(--accent-2); background: var(--tint); border-color: var(--tint-line); }
 
 .log {
 	flex: 1;
@@ -142,7 +137,7 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 	display: block;
 	margin-bottom: 2px;
 	font-family: var(--font-mono);
-	font-size: 11px;
+	font-size: 12px;
 	letter-spacing: 0.12em;
 	text-transform: uppercase;
 	color: var(--muted-2);
@@ -155,24 +150,24 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 .msg.error::before { content: 'Error'; color: var(--accent); }
 .msg.pending { color: var(--muted-2); }
 .msg.pending::before { content: none; }
-.hint { color: var(--muted-2); font-size: 11px; }
+.hint { color: var(--muted-2); font-size: 12px; }
 
 .pills { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 18px 14px; }
 .pills[hidden] { display: none; }
 .pill {
 	padding: 3px 8px;
 	font-family: var(--font-mono);
-	font-size: 11px;
+	font-size: 12px;
 	letter-spacing: 0.06em;
 	color: var(--muted);
 	border: 1px solid var(--line);
 	border-radius: var(--radius);
 	transition: border-color 0.2s ease, color 0.2s ease;
 }
-.pill:hover { border-color: var(--accent); color: var(--ink); }
+.pill:hover { border-color: var(--tint-line); background: var(--tint); color: var(--ink); }
 .pill:disabled { opacity: 0.5; cursor: default; }
 
-.foot { border-top: 1px solid var(--line); padding: 14px 18px; display: flex; flex-direction: column; gap: 8px; }
+.foot { padding: 14px 18px; display: flex; flex-direction: column; gap: 8px; }
 .form { display: flex; gap: 8px; align-items: center; }
 .form input {
 	flex: 1;
@@ -185,7 +180,10 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 	border-radius: var(--radius);
 	transition: border-color 0.2s ease;
 }
-.form input:focus { border-color: var(--line-strong); }
+/* The shared keyboard ring is bright red; the message box gets the soft tint instead.
+   It is still clearly visible: the border goes from faint white to a medium red. */
+.form input:focus-visible { outline: none; }
+.form input:focus { border-color: var(--tint-line); }
 .form input::placeholder { color: var(--muted); }
 .form input:disabled { opacity: 0.6; }
 .mic, .send {
@@ -198,30 +196,23 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 	border-radius: var(--radius);
 	transition: border-color 0.2s ease, color 0.2s ease;
 }
-.mic:hover, .send:hover { border-color: var(--accent); }
-.mic[aria-pressed='true'] { background: var(--accent); border-color: var(--accent); animation: none; }
+.mic:hover { border-color: var(--tint-line); background: var(--tint); }
+.mic[aria-pressed='true'] { background: var(--tint-hover); border-color: var(--tint-line-hover); animation: none; }
 /* Draws the eye to the mic until it is first used. */
 .mic[data-nudge='true'] {
-	color: var(--accent-2);
-	border-color: var(--accent);
+	color: var(--ink);
+	border-color: var(--tint-line);
 	animation: micPulse 1.8s ease-out infinite;
 }
-.send {
-	background: color-mix(in srgb, var(--accent) 18%, transparent);
-	color: var(--ink);
-	border-color: color-mix(in srgb, var(--accent) 40%, transparent);
-}
-.send:hover {
-	background: color-mix(in srgb, var(--accent) 30%, transparent);
-	border-color: color-mix(in srgb, var(--accent) 60%, transparent);
-}
+.send { background: var(--tint); color: var(--accent-2); border-color: var(--tint-line); }
+.send:hover { background: var(--tint-hover); border-color: var(--tint-line-hover); }
 .send:disabled { opacity: 0.5; cursor: default; }
 
 svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 @keyframes micPulse {
-	0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent); }
+	0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 35%, transparent); }
 	70% { box-shadow: 0 0 0 12px transparent; }
 	100% { box-shadow: 0 0 0 0 transparent; }
 }
@@ -248,7 +239,7 @@ export const MARKUP = `
 	</button>
 	<section class="panel" role="dialog" aria-label="Voice assistant">
 		<div class="head">
-			<span class="title mono">AI assistant</span>
+			<span class="title mono">Ask ADI</span>
 			<span class="rec mono"><span class="dot" aria-hidden="true"></span>Rec</span>
 			<span class="status mono" aria-live="polite"></span>
 			<button class="icon-btn voice-toggle" type="button" aria-pressed="true" aria-label="Spoken replies">${SPEAKER}</button>
